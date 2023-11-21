@@ -1,4 +1,3 @@
-from typing import Any
 import pygame as pg
 
 class Tile(pg.sprite.Sprite):
@@ -8,5 +7,5 @@ class Tile(pg.sprite.Sprite):
         self.image.fill('blue')
         self.rect = self.image.get_rect(topleft = pos)
 
-    def update(self, mover_x):
-        self.rect.x += mover_x
+    def update(self, mover):
+        self.rect.x += mover

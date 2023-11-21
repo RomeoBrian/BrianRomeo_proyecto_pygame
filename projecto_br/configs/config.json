@@ -1,0 +1,35 @@
+{
+    "debug": {
+        "MAP": [
+            "                                  ",
+            "                                  ",
+            "                                  ",
+            "              E              E    ",
+            "###           ##   ###    ######  ",
+            "             ###            ####  ",
+            "           ##                #### ",
+            "                       ###        ",
+            "      P       E              E    ",
+            "######################    ########"
+        ],
+        "gravedad": 1,
+        "velocidad_mover_mapa": 4,
+        "player": {
+            "frame_rate": 60,
+            "velocidad_animacion": 0.15,
+            "vidas": 3,
+            "disparo_cooldown": 300,
+            "speed": 6,
+            "altura_salto": 20,
+            "super_salto": 0
+        },
+        "enemy": {
+            "frame_rate": 60,
+            "velocidad_animacion": 0.15,
+            "velocidad_movimiento": 0.15,
+            "vidas": 2,
+            "disparo_cooldown": 300,
+            "speed": 2
+        }
+    }
+}
