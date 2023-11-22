@@ -9,27 +9,29 @@
             "             ###            ####  ",
             "           ##                #### ",
             "                       ###        ",
-            "      P       E              E    ",
+            "      P          E           E    ",
             "######################    ########"
         ],
         "gravedad": 1,
         "velocidad_mover_mapa": 4,
         "player": {
-            "frame_rate": 60,
+            "frame_rate": 75,
             "velocidad_animacion": 0.15,
-            "vidas": 3,
+            "vida": 100,
             "disparo_cooldown": 300,
             "speed": 6,
             "altura_salto": 20,
-            "super_salto": 0
+            "super_salto": 0,
+            "fuerza": 10
         },
         "enemy": {
-            "frame_rate": 60,
+            "frame_rate": 100,
             "velocidad_animacion": 0.15,
             "velocidad_movimiento": 0.15,
-            "vidas": 2,
+            "vidas": 50,
             "disparo_cooldown": 300,
-            "speed": 2
+            "speed": 2,
+            "fuerza": 5
         }
     }
 }

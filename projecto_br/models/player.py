@@ -30,11 +30,13 @@ class Player(pg.sprite.Sprite):
         self.__atack_rect = pg.Rect(0,0,0,0)
 
         #vida
-        self.__vidas = self.__player_config.get('vidas')
+        self.__vidas = self.__player_config.get('vida')
 
         #ataque
         self.__is_atacking = False
+        self.__is_hitting = False
         self.__is_shooting = False
+        self.__fuerza = self.__player_config.get('fuerza')
         self.__proyectil_group = pg.sprite.Group()
         self.__tiempo_disparo = 0
         self.__disparo_cooldown = self.__player_config.get('disparo_cooldown')
@@ -143,6 +145,22 @@ class Player(pg.sprite.Sprite):
     @is_atacking.setter
     def is_atacking(self,atacking):
         self.__is_atacking = atacking
+    
+    @property
+    def is_hitting(self):
+        return self.__is_hitting
+
+    @is_hitting.setter
+    def is_hitting(self,hitting):
+        self.__is_hitting = hitting
+    
+    @property
+    def fuerza(self):
+        return self.__fuerza
+
+    @fuerza.setter
+    def fuerza(self,aumento_fuerza):
+        self.__fuerza = aumento_fuerza
 
     def importar_player_assest(self):
         path = 'assets/graphics/player/'
@@ -153,24 +171,24 @@ class Player(pg.sprite.Sprite):
             self.__animaciones[animacion] = importar_carpeta(path_completo,imagenes_bool= True)
 
     def player_estado(self):
-        if self.__is_atacking:
-            self.__estado = 'atack'
-        elif self.__is_shooting:
-            self.__estado = 'shoot'
-        elif self.__direccion.y < 0 and not self.__is_grounded:
-            self.__estado = 'saltar'
-        elif self.__direccion.y > 0 and not self.__is_grounded:
-            self.__estado = 'caer'
-        else:
-            if self.__direccion.x != 0:
+        if self.__vidas > 0:
+            if self.__is_atacking:
+                self.__estado = 'atack'
+            elif self.__is_shooting:
+                self.__estado = 'shoot'
+            elif self.__direccion.y < 0 and not self.__is_grounded:
+                self.__estado = 'saltar'
+            elif self.__direccion.y > 0 and not self.__is_grounded:
+                self.__estado = 'caer'
+            elif self.__damage:
+                self.__estado = 'damage'
+            elif self.__direccion.x != 0:
                 self.__estado = 'correr'
             else:
                 if self.__is_grounded:
                     self.__estado = 'idle'
-                    if self.__damage:
-                        self.__estado = 'damage'
-                    if self.__vidas <= 0:
-                        self.__estado = 'death'
+        else:
+            self.__estado = 'death'
 
     def tomar_direccion_imagen(self,image):
         if self.__mirar_derecha:
@@ -182,21 +200,23 @@ class Player(pg.sprite.Sprite):
     def play_animacion(self,delta_ms):
         animacion = self.__animaciones[self.__estado]
 
-        self.__velocidad_animacion += delta_ms/1.2
+        self.__velocidad_animacion += delta_ms
         if self.__is_shooting:
-            self.__velocidad_animacion += delta_ms/3   
+            self.__frame_rate = 80  
         if self.__velocidad_animacion >= self.__frame_rate:
             self.__frame_index += 1
             self.__frame_index %= len(animacion)
             image = animacion[self.__frame_index]
             self.tomar_direccion_imagen(image)
             self.__velocidad_animacion = 0
-        
-        if self.__estado == 'damage' and self.__frame_index == 2:
+            if self.__estado == 'atack' and self.__frame_index == 2:
+                self.__is_atacking = False
+            if self.__estado == 'damage' and self.__frame_index == 2:
                 self.__damage = False
-        
-        if self.__estado == 'death' and self.__frame_index == 5:
+            if self.__estado == 'death' and self.__frame_index == 5:
                 print('murio')
+                self.__frame_rate = 10000
+        
         
         #Control de coliciones con los objetos del mapa
         if self.__is_grounded and self.__a_derecha:
@@ -234,7 +254,7 @@ class Player(pg.sprite.Sprite):
             self.__estado = 'idle'
         if teclas[pg.K_SPACE] and self.__is_grounded:    
             self.salto()       
-        if teclas[pg.K_f] and self.__ready:
+        if teclas[pg.K_f] and not self.__is_atacking and self.__ready:
             self.atack()
             self.__ready = False
             self.__tiempo_disparo = pg.time.get_ticks()
@@ -250,7 +270,6 @@ class Player(pg.sprite.Sprite):
             curent_time = pg.time.get_ticks()
             if curent_time - self.__tiempo_disparo >= self.__disparo_cooldown:
                 self.__is_shooting = False
-                self.__is_atacking = False
                 self.__ready = True
                 self.__frame_index = 0
 
@@ -271,11 +290,14 @@ class Player(pg.sprite.Sprite):
 
     
     def atack(self):
+        self.__is_hitting = True
         self.__is_atacking = True
-        if self.__mirar_derecha:
-            self.__atack_rect = pg.Rect(self.rect.centerx,self.rect.y, 20 + self.rect.width, self.rect.height)
-        else:
-            self.__atack_rect = pg.Rect(self.rect.centerx - 45,self.rect.y, 20 + self.rect.width, self.rect.height)
+        if self.__is_hitting:
+            if self.__mirar_derecha:
+                self.__atack_rect = pg.Rect(self.rect.centerx,self.rect.y, 20 + self.rect.width, self.rect.height)
+            else:
+                self.__atack_rect = pg.Rect(self.rect.centerx - 45,self.rect.y, 20 + self.rect.width, self.rect.height)
+        #dibujo el rectangulo para probar como funciona.
         #pg.draw.rect(self.__pantalla, 'red',self.__atack_rect)
         
     

@@ -107,19 +107,21 @@ class Nivel:
                 self.__enemy_collision = True
 
     def run(self,delta_ms):
-        #colliosiones y muertes
         
-        if self.__player.sprite.is_atacking:
+        
+        #colliosiones y muertes del enemigo
+        if self.__player.sprite.is_hitting:
             for enemigos in self.__enemy:
                 if self.__player.sprite.atack_rect.colliderect(enemigos):
-                    print('hit')
-                    self.__player.sprite.is_atacking = False
-                    enemigos.hit()
+                    print('hit')                    
+                    enemigos.hit(self.__player.sprite.fuerza)
+                    self.__player.sprite.is_hitting = False
 
+        #player death
         self.ataque_enemigo()
         if self.__enemy_collision:
-            #self.__player.sprite.recibir_golpe()
             self.__enemy_collision = False
+            self.__player.sprite.recibir_golpe()
             print(self.__player.sprite.vidas)
 
 

@@ -22,6 +22,7 @@ class Enemy(pg.sprite.Sprite):
         self.__en_techo = False
         self.__a_derecha = False
         self.__a_izquierda = False
+        self.__get_hit = False
 
         #vida
         self.__vidas = self.__enemy_configs.get('vidas')
@@ -29,6 +30,7 @@ class Enemy(pg.sprite.Sprite):
         #ataque
         self.__is_atacking = False
         self.__is_shooting = False
+        self.__fuerza = self.__enemy_configs.get('fuerza')
         
         #movimiento
         self.__direccion = pg.math.Vector2(0,0)
@@ -50,6 +52,14 @@ class Enemy(pg.sprite.Sprite):
     @direccion.setter
     def direccion(self,direccion):
         self.__direccion = direccion
+    
+    @property
+    def fuerza(self):
+        return self.__fuerza
+    
+    @fuerza.setter
+    def fuerza(self,aumento_fuerza):
+        self.__fuerza = aumento_fuerza
 
     def importar_enemy_assest(self):
         path = 'assets/graphics/enemy/summon/'
@@ -60,15 +70,17 @@ class Enemy(pg.sprite.Sprite):
             self.__animaciones[animacion] = importar_carpeta(path_completo,imagenes_bool = True)
 
     def enemy_estado(self):
-        if self.__is_atacking:
-            self.__estado = 'atack'
-        elif self.__is_shooting:
-            self.__estado = 'shoot'
-        else:
-            if self.__is_grounded:
+        if self.__vidas > 0:
+            if self.__is_atacking:
+                self.__estado = 'atack'
+            elif self.__is_shooting:
+                self.__estado = 'shoot'
+            elif self.__get_hit:
+                self.__estado = 'damage'
+            else: 
                 self.__estado = 'idle'
-            if self.__vidas == 0:
-                self.__estado = 'death'
+        else:
+            self.__estado = 'death'
 
     def tomar_direccion_imagen(self,image):
         if self.__mirar_derecha:
@@ -82,17 +94,18 @@ class Enemy(pg.sprite.Sprite):
 
         self.__velocidad_animacion += delta_ms
         if self.__estado == 'death':
-            self.__velocidad_animacion += delta_ms/7
+            self.__velocidad_animacion += delta_ms/10
         if self.__velocidad_animacion >= self.__frame_rate:
             self.__frame_index += 1
             self.__frame_index %= len(animacion)
             image = animacion[self.__frame_index]
             self.tomar_direccion_imagen(image)
             self.__velocidad_animacion = 0
-        
-        if self.__estado == 'death' and self.__frame_index == 4:
+            if self.__estado == 'damage' and self.__frame_index == 3:
+                self.__get_hit = False
+            if self.__estado == 'death' and self.__frame_index == 4:
                 self.kill()
-                self.__vidas = 2
+        
 
         #Control de coliciones con los objetos del mapa
         if self.__is_grounded and self.__a_derecha:
@@ -109,7 +122,7 @@ class Enemy(pg.sprite.Sprite):
             self.rect = self.image.get_rect(midtop = self.rect.midtop)
         
     def moviemiento_enemigo(self,delta_time):
-        self.__velocidad_movimiento += delta_time/5
+        self.__velocidad_movimiento += delta_time
         if self.__velocidad_movimiento >= self.__frame_rate:
             self.__frame_movimiento += 1
             if(self.__frame_movimiento > 0 and self.__frame_movimiento < 4):
@@ -135,8 +148,10 @@ class Enemy(pg.sprite.Sprite):
         self.__is_shooting = True
         self.__frame_index = 0
 
-    def hit(self):
-        self.__vidas -= 1
+    def hit(self, golpe):
+        self.__get_hit = True
+        self.__vidas -= golpe
+        
 
     def update(self,mover,delta_ms):
         self.rect.x += mover

@@ -24,10 +24,10 @@ class Proyectil(pg.sprite.Sprite):
     def update(self):
         match self.direction:
             case 'derecha':
-                self.rect.x += 20
+                self.rect.x += 10
                 if self.rect.x >= ANCHO:
                     self.kill()
             case 'izquierda':
-                self.rect.x -= 20
+                self.rect.x -= 10
                 if self.rect.x <= 0:
                     self.kill()
