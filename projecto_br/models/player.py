@@ -217,7 +217,6 @@ class Player(pg.sprite.Sprite):
                 print('murio')
                 self.__frame_rate = 10000
         
-        
         #Control de coliciones con los objetos del mapa
         if self.__is_grounded and self.__a_derecha:
             self.rect = self.image.get_rect(bottomright = self.rect.bottomright)

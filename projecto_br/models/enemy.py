@@ -1,6 +1,7 @@
 import pygame as pg
 from settings.constantes import ANCHO
 from settings.utils import importar_carpeta
+import random
 
 
 class Enemy(pg.sprite.Sprite):
@@ -10,7 +11,6 @@ class Enemy(pg.sprite.Sprite):
         self.__enemy_configs = enemy_configs
         #animacion
         self.__frame_index = 0
-        self.__frame_movimiento = 0
         self.__frame_rate = self.__enemy_configs.get('frame_rate')
         self.__velocidad_animacion = self.__enemy_configs.get('velocidad_animacion')
         self.__velocidad_movimiento = self.__enemy_configs.get('velocidad_movimiento')
@@ -33,9 +33,15 @@ class Enemy(pg.sprite.Sprite):
         self.__fuerza = self.__enemy_configs.get('fuerza')
         
         #movimiento
-        self.__direccion = pg.math.Vector2(0,0)
+        self.__direccion = pg.math.Vector2(1,0)
         self.__speed =  self.__enemy_configs.get('speed')
         self.__gravedad = gravedad
+        self.__distancia_recorrida = random.randint(15,32)
+        self.__frame_movimiento = 0
+        self.__is_idle = False
+        self.__frame_idle = 0
+        self.__campo_vision = pg.Rect(0,0,150,20)
+
 
     @property
     def speed(self):
@@ -54,12 +60,44 @@ class Enemy(pg.sprite.Sprite):
         self.__direccion = direccion
     
     @property
+    def frame_movimiento(self):
+        return self.__frame_movimiento
+    
+    @frame_movimiento.setter
+    def frame_movimiento(self,movimiento):
+        self.__frame_movimiento = movimiento
+    
+    @property
     def fuerza(self):
         return self.__fuerza
     
     @fuerza.setter
     def fuerza(self,aumento_fuerza):
         self.__fuerza = aumento_fuerza
+    
+    @property
+    def a_derecha(self):
+        return self.__a_derecha
+    
+    @a_derecha.setter
+    def a_derecha(self,derecha):
+        self.__a_derecha = derecha
+
+    @property
+    def a_izquierda(self):
+        return self.__a_izquierda
+    
+    @a_derecha.setter
+    def a_izquierda(self,izquierda):
+        self.__a_izquierda = izquierda
+    
+    @property
+    def campo_vision(self):
+        return self.__campo_vision
+    
+    @campo_vision.setter
+    def campo_vision(self,vision):
+        self.__campo_vision = vision
 
     def importar_enemy_assest(self):
         path = 'assets/graphics/enemy/summon/'
@@ -121,19 +159,25 @@ class Enemy(pg.sprite.Sprite):
         elif self.__en_techo:
             self.rect = self.image.get_rect(midtop = self.rect.midtop)
         
-    def moviemiento_enemigo(self,delta_time):
-        self.__velocidad_movimiento += delta_time
-        if self.__velocidad_movimiento >= self.__frame_rate:
-            self.__frame_movimiento += 1
-            if(self.__frame_movimiento > 0 and self.__frame_movimiento < 4):
-                self.__direccion.x = 1
-                self.__mirar_derecha = True
-            elif(self.__frame_movimiento >= 4 and self.__frame_movimiento < 6):
-                self.__direccion.x = -1
-                self.__mirar_derecha = False
+    def moviemiento_enemigo(self):
+        if self.__vidas > 0:
+            if not self.__is_idle and random.randint(1,200) == 1:
+                self.__direccion.x = 0
+                self.__is_idle = True
+                self.__frame_idle = 50
+            if not self.__is_idle:
+                if self.__direccion.x == 1:
+                    self.__mirar_derecha = True
+                else:
+                    self.__mirar_derecha = False
+                if self.__frame_movimiento > self.__distancia_recorrida:
+                    self.__direccion.x *= -1
+                    self.__frame_movimiento *= -1
             else:
-                self.__frame_movimiento = 0
-            self.__velocidad_movimiento = 0
+                self.__frame_idle -= 1
+                if self.__frame_idle <= 0:
+                    self.__is_idle = False
+                    self.__direccion.x = 1
     
 
     def get_grounded(self):
@@ -155,7 +199,7 @@ class Enemy(pg.sprite.Sprite):
 
     def update(self,mover,delta_ms):
         self.rect.x += mover
-        self.moviemiento_enemigo(delta_ms)
+        self.moviemiento_enemigo()
         self.enemy_estado()
         self.play_animacion(delta_ms)
 

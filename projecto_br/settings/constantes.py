@@ -1,9 +1,10 @@
 import json
 
 FPS = 60
-TILEZISE = 64
 
 ANCHO = 1200
+ALTO = int(ANCHO * 0.6)
+TILEZISE = 40
 CONFIG_FILE_PATH = './configs/config.json'
 
 def open_configs() -> dict:
