@@ -302,6 +302,7 @@ class Player(pg.sprite.Sprite):
     
     def shoot(self):
         self.__is_shooting = True
+        self.__is_hitting = True
         self.__proyectil_group.add(self.crear_proyectil())
     
     def crear_proyectil(self):
@@ -310,8 +311,8 @@ class Player(pg.sprite.Sprite):
         else:
             return Proyectil(self.rect.centerx, self.rect.centery, 'izquierda','./assets/graphics/player/proyectil/proyectil.png' , True) # Crea y devuelve un objeto de la clase Bullet en la posición actual del ratón
     
-    def recibir_golpe(self):
-        self.__vidas -= 1
+    def recibir_golpe(self,golpe = 0):
+        self.__vidas -= golpe
         self.__damage = True
 
     def update(self,delta_ms):

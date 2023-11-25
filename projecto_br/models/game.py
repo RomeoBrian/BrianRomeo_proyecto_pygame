@@ -5,7 +5,7 @@ from models.nivel import Nivel
 class Game:
     def __init__(self) -> None:
         pg.init()
-        self.__config = open_configs().get('debug')
+        self.__config = open_configs().get('nivel_1')
         MAP = self.__config.get('MAP')
         self.ancho_nivel = len(MAP)
         self.screen = pg.display.set_mode((ANCHO,ALTO))

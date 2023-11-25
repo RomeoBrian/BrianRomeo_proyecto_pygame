@@ -4,6 +4,7 @@ from models.tiles import Tile
 from models.boundries import Boundry
 from models.player import Player
 from models.enemy import Enemy
+from models.trampas import Trampa
 
 class Nivel:
     def __init__(self,nivel_data,surface,diccionario_nivel: dict,ancho_nivel) -> None:
@@ -31,6 +32,7 @@ class Nivel:
         self.__boundry = pg.sprite.Group()
         self.__player = pg.sprite.GroupSingle()
         self.__enemy = pg.sprite.Group()
+        self.__trampa = pg.sprite.Group()
         for filas_index,filas in enumerate(layout):
             for col_index,celda in enumerate(filas):
                 x = col_index * TILEZISE
@@ -97,8 +99,26 @@ class Nivel:
                         enemy_sprite = Enemy((x,y),self.__nivel_config.get('gravedad'),self.__nivel_config.get('enemy'))
                         self.__enemy.add(enemy_sprite)
                     case 'T':
-                        tile = Tile((x,y),TILEZISE,['./assets/graphics/tiles/ground/trampa.png'])
+                        trampa = Trampa((x,y),TILEZISE,['./assets/graphics/tiles/ground/trampa.png'])
+                        self.__trampa.add(trampa)
+                    case 'm':
+                        tile = Tile((x,y),TILEZISE,['./assets/graphics/tiles/ground/plataforma_movimiento_izquierda.png'],is_movable = True, direccion_y = True)
                         self.__tiles.add(tile)
+                    case 'o':
+                        tile = Tile((x,y),TILEZISE,['./assets/graphics/tiles/ground/plataforma_movimiento_medio.png'],is_movable = True, direccion_y = True)
+                        self.__tiles.add(tile)
+                    case 'v':
+                        tile = Tile((x,y),TILEZISE,['./assets/graphics/tiles/ground/plataforma_movimiento_derecha.png'],is_movable = True, direccion_y = True)
+                        self.__tiles.add(tile)
+                    case 'J':
+                        boundries = Boundry((x,y),TILEZISE,'./assets/graphics/tiles/ground/piso_medio_izquierda.png')
+                        self.__boundry.add(boundries)
+                    case 'L':
+                        boundries = Boundry((x,y),TILEZISE,'./assets/graphics/tiles/ground/piso_fondo_medio.png')
+                        self.__boundry.add(boundries)
+                    case 'G':
+                        boundries = Boundry((x,y),TILEZISE,'./assets/graphics/tiles/ground/piso_abajo_medio.png')
+                        self.__boundry.add(boundries)
     
     def tileBackground(self,image: pg.Surface) -> None:
         screenWidth, screenHeight = self.__pantalla.get_size()
@@ -120,12 +140,13 @@ class Nivel:
         #colision del player con el entorno
         for tile_sprite in self.__tiles.sprites():
             if tile_sprite.rect.colliderect(player.rect):
-                if player.direccion.x < 0:
+                if player.direccion.x < 0 and not tile_sprite.is_movable:
                     player.frame_index = 0
                     player.rect.left = tile_sprite.rect.right + 3
+                    print(player.rect.left)
                     player.a_izquierda = True
                     self.__lugar_player = player.rect.left
-                elif player.direccion.x > 0:
+                elif player.direccion.x > 0 and not tile_sprite.is_movable:
                     player.frame_index = 0
                     player.rect.right = tile_sprite.rect.left  - 3
                     player.a_derecha = True
@@ -170,6 +191,7 @@ class Nivel:
             if tile_sprite.rect.colliderect(player.rect):
                 if player.direccion.y > 0:
                     player.rect.bottom = tile_sprite.rect.top
+                    #print(player.rect.bottom)
                     player.direccion.y = 0
                     player.is_grounded = True
                     player.do_salto = True                   
@@ -180,14 +202,14 @@ class Nivel:
                     
         for enemigo in enemys:
             enemigo.get_grounded()
-            for boundry_sprite in self.__tiles.sprites():
-                if boundry_sprite.rect.colliderect(enemigo.rect):
+            for tile_sprite in self.__tiles.sprites():
+                if tile_sprite.rect.colliderect(enemigo.rect):
                     if enemigo.direccion.y > 0:
-                        enemigo.rect.bottom = boundry_sprite.rect.top
+                        enemigo.rect.bottom = tile_sprite.rect.top
                         enemigo.direccion.y = 0
                         enemigo.is_grounded = True                  
                     elif enemigo.direccion.y < 0:
-                        enemigo.rect.top = boundry_sprite.rect.bottom
+                        enemigo.rect.top = tile_sprite.rect.bottom
                         enemigo.direccion.y = 0
                         enemigo.en_techo = True
                 
@@ -219,6 +241,12 @@ class Nivel:
             if pg.sprite.spritecollide(enemigos, self.__player, False):
                 self.__enemy_collision = True
 
+    def damage_trampas(self):
+        for trampas in self.__trampa:
+            if trampas.rect.colliderect(self.__player.sprite.rect):
+                trampas.contacto = True                
+                
+
     def run(self,delta_ms):
         
         #background
@@ -231,13 +259,20 @@ class Nivel:
                     print('hit')                    
                     enemigos.hit(self.__player.sprite.fuerza)
                     self.__player.sprite.is_hitting = False
+                
+            collision_proyectil = pg.sprite.groupcollide(self.__player.sprite.proyectil_group,self.__enemy,True,False)
+            for key in collision_proyectil:
+                collision_proyectil[key][0].hit(10)
+
+        #colision proyectil con tiles
+        pg.sprite.groupcollide(self.__player.sprite.proyectil_group,self.__tiles,True,False)
 
         #player death
         self.ataque_enemigo()
         if self.__enemy_collision:
             self.__enemy_collision = False
-            self.__player.sprite.recibir_golpe()
-            #print(self.__player.sprite.vidas)
+            self.__player.sprite.recibir_golpe(1)
+            
 
         self.mover_camara()
 
@@ -267,6 +302,18 @@ class Nivel:
         #for enemigos in self.__enemy:
             #pg.draw.rect(self.__pantalla,'red',enemigos.rect)
         
+        #trampa
+        self.__trampa.update(self.__movimiento_camara[0])
+        self.__trampa.draw(self.__pantalla)
+        
+        #contacto con trampa
+        self.damage_trampas()
+        for trampa in self.__trampa:
+            if trampa.contacto == True:
+                damage = trampa.do_damage()
+                print(self.__player.sprite.vidas)
+                self.__player.sprite.recibir_golpe(damage)
+
 
         #proyectil
         self.__player.sprite.proyectil_group.update()

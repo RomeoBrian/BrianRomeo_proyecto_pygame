@@ -3,7 +3,7 @@ import json
 FPS = 60
 
 ANCHO = 1200
-ALTO = int(ANCHO * 0.6)
+ALTO = int(ANCHO * 0.7)
 TILEZISE = 40
 CONFIG_FILE_PATH = './configs/config.json'
 
