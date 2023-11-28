@@ -2,13 +2,16 @@ import pygame as pg
 from settings.constantes import ANCHO
 from settings.utils import importar_carpeta
 import random
+from models.proyectil import Proyectil
 
 
 class Enemy(pg.sprite.Sprite):
     def __init__(self,pos,gravedad,enemy_configs: dict):
         super().__init__()
-        self.importar_enemy_assest()
         self.__enemy_configs = enemy_configs
+        #path random, entre los enemigos seteados
+        self.__path_random = random.choices(self.__enemy_configs.get('path'),self.__enemy_configs.get('weights'))[0]
+        self.importar_enemy_assest()
         #animacion
         self.__frame_index = 0
         self.__frame_rate = self.__enemy_configs.get('frame_rate')
@@ -24,6 +27,7 @@ class Enemy(pg.sprite.Sprite):
         self.__a_izquierda = False
         self.__get_hit = False
 
+
         #vida
         self.__vidas = self.__enemy_configs.get('vidas')
 
@@ -31,6 +35,11 @@ class Enemy(pg.sprite.Sprite):
         self.__is_atacking = False
         self.__is_shooting = False
         self.__fuerza = self.__enemy_configs.get('fuerza')
+        self.__proyectil_group = pg.sprite.Group()
+        self.__tiempo_disparo = 0
+        self.__disparo_cooldown = self.__enemy_configs.get('disparo_cooldown')
+        self.__ready = True
+        self.__fuerza_proyectil = self.__enemy_configs.get('fuerza_proyectil')
         
         #movimiento
         self.__direccion = pg.math.Vector2(1,0)
@@ -99,23 +108,49 @@ class Enemy(pg.sprite.Sprite):
     def campo_vision(self,vision):
         self.__campo_vision = vision
 
+    @property
+    def ready(self):
+        return self.__ready
+    
+    @ready.setter
+    def ready(self,ready_to_shoot):
+        self.__ready = ready_to_shoot
+
+    @property
+    def tiempo_disparo(self):
+        return self.__tiempo_disparo
+    
+    @tiempo_disparo.setter
+    def tiempo_disparo(self,disparo):
+        self.__tiempo_disparo = disparo
+    
+    @property
+    def proyectil_group(self):
+        return self.__proyectil_group
+    
+    @proyectil_group.setter
+    def proyectil_group(self,proyectil):
+        self.__proyectil_group = proyectil
+        
+    @property
+    def fuerza_proyectil(self):
+        return self.__fuerza_proyectil
+
     def importar_enemy_assest(self):
-        path = 'assets/graphics/enemy/summon/'
-        self.__animaciones = importar_carpeta(path,carpetas_bool = True)
+        self.__animaciones = importar_carpeta(self.__path_random,carpetas_bool = True)
 
         for animacion in self.__animaciones.keys():
-            path_completo = path + animacion
+            path_completo = self.__path_random + animacion
             self.__animaciones[animacion] = importar_carpeta(path_completo,imagenes_bool = True)
 
     def enemy_estado(self):
+        lista_estados = [key for key in self.__animaciones]
         if self.__vidas > 0:
-            if self.__is_atacking:
-                self.__estado = 'atack'
-            elif self.__is_shooting:
+            if self.__is_shooting and 'shoot' in lista_estados:
                 self.__estado = 'shoot'
-            elif self.__get_hit:
+            elif self.__get_hit and 'damage' in lista_estados:
                 self.__estado = 'damage'
-            else: 
+            else:
                 self.__estado = 'idle'
         else:
             self.__estado = 'death'
@@ -139,10 +174,13 @@ class Enemy(pg.sprite.Sprite):
             image = animacion[self.__frame_index]
             self.tomar_direccion_imagen(image)
             self.__velocidad_animacion = 0
-            if self.__estado == 'damage' and self.__frame_index == 3:
+            if self.__estado == 'shoot' and self.__frame_index >= (len(animacion) -1):
+                self.__is_shooting = False
+            if self.__estado == 'damage' and self.__frame_index >= (len(animacion) -1):
                 self.__get_hit = False
-            if self.__estado == 'death' and self.__frame_index == 4:
+            if self.__estado == 'death' and self.__frame_index >= (len(animacion) -1):
                 self.kill()
+        
         
 
         #Control de coliciones con los objetos del mapa
@@ -165,19 +203,20 @@ class Enemy(pg.sprite.Sprite):
                 self.__direccion.x = 0
                 self.__is_idle = True
                 self.__frame_idle = 50
-            if not self.__is_idle:
-                if self.__direccion.x == 1:
-                    self.__mirar_derecha = True
+            if not self.__is_shooting :
+                if not self.__is_idle:
+                    if self.__direccion.x == 1:
+                        self.__mirar_derecha = True
+                    else:
+                        self.__mirar_derecha = False
+                    if self.__frame_movimiento > self.__distancia_recorrida:
+                        self.__direccion.x *= -1
+                        self.__frame_movimiento *= -1
                 else:
-                    self.__mirar_derecha = False
-                if self.__frame_movimiento > self.__distancia_recorrida:
-                    self.__direccion.x *= -1
-                    self.__frame_movimiento *= -1
-            else:
-                self.__frame_idle -= 1
-                if self.__frame_idle <= 0:
-                    self.__is_idle = False
-                    self.__direccion.x = 1
+                    self.__frame_idle -= 1
+                    if self.__frame_idle <= 0:
+                        self.__is_idle = False
+                        self.__direccion.x = 1
     
 
     def get_grounded(self):
@@ -191,17 +230,35 @@ class Enemy(pg.sprite.Sprite):
     def shoot(self):
         self.__is_shooting = True
         self.__frame_index = 0
+        self.__proyectil_group.add(self.crear_proyectil())
 
     def hit(self, golpe):
         self.__get_hit = True
+        self.__is_shooting = False
         self.__vidas -= golpe
-        
+    
+    def cooldown(self):
+        if not self.__ready:
+            curent_time = pg.time.get_ticks()
+            if curent_time - self.__tiempo_disparo >= self.__disparo_cooldown:
+                self.__is_shooting = False
+                self.__ready = True
+                self.__frame_index = 0
+    
 
-    def update(self,mover,delta_ms):
-        self.rect.x += mover
-        self.moviemiento_enemigo()
-        self.enemy_estado()
-        self.play_animacion(delta_ms)
+    def crear_proyectil(self):
+        if self.__mirar_derecha:
+            return Proyectil(self.rect.centerx, self.rect.centery, 'derecha',self.__path_random,True) 
+        else:
+            return Proyectil(self.rect.centerx, self.rect.centery, 'izquierda',self.__path_random, True) 
+
+    def update(self,mover,delta_ms,pausa):
+        if not pausa:
+            self.rect.x += mover
+            self.cooldown()
+            self.moviemiento_enemigo()
+            self.enemy_estado()
+            self.play_animacion(delta_ms)
 
 
         

@@ -1,4 +1,61 @@
 {
+    "map_settings": {
+        "tiles_piso": {
+            "0": "./assets/graphics/tiles/ground/piso_medio.png",
+            "1": "./assets/graphics/tiles/ground/piso_arriba_derecha.png",
+            "2": "./assets/graphics/tiles/ground/piso_medio_derecha.png",
+            "3": "./assets/graphics/tiles/ground/piso_abajo_derecha.png",
+            "4": "./assets/graphics/tiles/ground/piso_abajo_medio.png",
+            "5": "./assets/graphics/tiles/ground/piso_abajo_izquierda.png",
+            "6": "./assets/graphics/tiles/ground/piso_medio_izquierda.png",
+            "7": "./assets/graphics/tiles/ground/piso_arriba_izquierda.png",
+            "8": "./assets/graphics/tiles/ground/piso_fondo_medio.png",
+            "q": "./assets/graphics/tiles/ground/piso_invertido_arriba_derecha.png",
+            "e": "./assets/graphics/tiles/ground/piso_invertido_arriba_izquierda.png",
+            "z": "./assets/graphics/tiles/ground/piso_invertido_abajo_izquierda.png",
+            "c": "./assets/graphics/tiles/ground/piso_invertido_abajo_derecha.png"
+        },
+        "tiles_plataforma": {
+            "p": "./assets/graphics/tiles/ground/plataforma_inicio.png",
+            "l": "./assets/graphics/tiles/ground/plataforma_medio.png",
+            "a": "./assets/graphics/tiles/ground/plataforma_fin.png",
+            "t": "./assets/graphics/tiles/ground/plataforma_sola.png"
+        },
+        "tiles_movimiento": {
+            "m": "./assets/graphics/tiles/ground/plataforma_movimiento_izquierda.png",
+            "o": "./assets/graphics/tiles/ground/plataforma_movimiento_medio.png",
+            "v": "./assets/graphics/tiles/ground/plataforma_movimiento_derecha.png"
+        },
+        "tiles_invisibles": {
+            "J": "./assets/graphics/tiles/ground/piso_medio_izquierda.png",
+            "L": "./assets/graphics/tiles/ground/piso_fondo_medio.png",
+            "G": "./assets/graphics/tiles/ground/piso_abajo_medio.png",
+            "b": "boundry"
+        },
+        "entidades": {
+            "P": "player",
+            "E": "enemy",
+            "T": "./assets/graphics/tiles/ground/trampa.png",
+            "f": "fish"
+
+        }
+    },
+    "ui_settings": {
+        "healt_bar": "./assets/graphics/health_bar/Health_bar.png",
+        "heart": "./assets/graphics/health_bar/Heart_Red_1.png",
+        "barra_vida_topleft": [65, 22],
+        "maximo_ancho_barra": 142,
+        "altura_barra": 12,
+        "fish_coin": "./assets/graphics/sobrecito/animado/sobrecito0.png",
+        "topleft_fish": [50, 61],
+        "font": "./assets/fonts/PublicPixel.ttf",
+        "boton": "./assets/graphics/ui/botones/ButtonText_Blue_OnOffBackground.png"
+    },
+    "level_manager_settings": [
+        { "pos": [200, 450], "contenido": "nivel_1", "desbloquea": 1 },
+        { "pos": [650, 250], "contenido": "nivel_2", "desbloquea": 2 },
+        { "pos": [950, 560], "contenido": "nivel_3", "desbloquea": 2 }
+    ],
     "debug": {
         "MAP": [
             "888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888",
@@ -37,10 +94,16 @@
             "velocidad_animacion": 0.25,
             "velocidad_movimiento": 0.25,
             "vidas": 50,
-            "disparo_cooldown": 300,
+            "disparo_cooldown": 1000,
             "speed": 2,
             "fuerza": 5
+        },
+        "fish": {
+            "frame_rate": 200,
+            "velocidad_animacion": 0.25,
+            "path": "assets/graphics/sobrecito/"
         }
+
     },
     "nivel_1": {
         "MAP": [
@@ -49,19 +112,19 @@
             "8888888888888888888888888888888888888888888888888888888888888888LLLLLLLLLL888888888888888888888888888888888888888",
             "88888888q4444444444444e8q4444444444444444444444444444444e8q44444GG444444GG4444444444444444444444444444e8888888888",
             "888888882             682                               682b                                          JLL88888888",
-            "888888882             682                               682b        b                              S  JLL88888888",
-            "888888882plla         682                               682b  E     b                           plllla68888888888",
-            "888888882             682                               543plllllllab   plllla          701moov       68888888888",
+            "888888882 f           682                               682b        b                              S  JLL88888888",
+            "888888882plla         682                               682b  E f   b      f                    plllla68888888888",
+            "888888882    t        682                               543plllllllab   plllla          701moov       68888888888",
             "888888882             682          b                b                          moov     682           68888888888",
-            "888888882  t    plllla682      t   b   E          E b                                  t682           68888888888",
-            "888888882             682          plllllllllllllllla                                   682           68888888888",
-            "888888882             682                                                               682           68888888888",
+            "888888882       plllla682      t   b   E   f      E b                                  t682           68888888888",
+            "888888882             682          plllllllllllllllla                                   682      f    68888888888",
+            "888888882             682 f                                                             682           68888888888",
             "888888882pllla        543pla                                                            682       t   68888888888",
             "888888882                                             701                               682           68888888888",
             "888888882                     t                       682                               682plla       68888888888",
-            "888888882                         plla                682                               543           68888888888",
-            "888888882     pa  t                         b         682         t                               plla68888888888",
-            "888888882 P t                               b     E   682                  b       b                  68888888888",
+            "888888882  !   f                  plla                682      f           b       b    543           68888888888",
+            "888888882     pa  t                         b         682         t        b   f   b              plla68888888888",
+            "888888882 P t                fff            b     E   682                  b       b     ff           68888888888",
             "88888888z0001TTTTTTTTT70000000000000000001  7000000000c8z000001TTTTTT7000001   E   7000000000000000000c8888888888",
             "888888888888z000000000c888888888888888888z00c88888888888888888z000000c88888z0000000c88888888888888888888888888888",
             "88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888"
@@ -76,38 +139,60 @@
             "speed": 6,
             "altura_salto": 25,
             "super_salto": 1,
-            "fuerza": 20
+            "fuerza": 20,
+            "fuerza_disparo": 10,
+            "vida_maxima": 200,
+            "len_barra_vida": 400,
+            "path": "./assets/graphics/player/",
+            "jump_sound": "./assets/sounds/jump_efect.mp3",
+            "shoot_sound": "./assets/sounds/Air_3.wav"
+
         },
         "enemy": {
             "frame_rate": 200,
             "velocidad_animacion": 0.25,
             "velocidad_movimiento": 0.25,
             "vidas": 50,
-            "disparo_cooldown": 300,
+            "disparo_cooldown": 3000,
             "speed": 2,
-            "fuerza": 5
-        }
+            "fuerza": 5,
+            "path": ["./assets/graphics/enemy/soul/", "./assets/graphics/enemy/summon/"],
+            "weights": [5, 10],
+            "fuerza_proyectil": 3
+        },
+        "fish": {
+            "frame_rate": 100,
+            "velocidad_animacion": 0.25,
+            "path": "assets/graphics/sobrecito/"
+        },
+        "main_theme": "assets/sounds/nivel_1.mp3",
+        "desbloquea": 1
+
+
     },
     "nivel_2": {
         "MAP": [
-            "888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888",
-            "88888888q444444444444444444444444444444444444444444444444444444444444444444444444e88888888",
-            "888888882                                                                        688888888",
-            "888888882                                                 b         b            688888888",
-            "888888882                                                 b   E     b            688888888",
-            "888888882                                                 bplllllllab   plllla   688888888",
-            "888888882                       b  b b   b  b      b           plllla    plllla  688888888",
-            "888888882                       bE b b   b  b  E   b                      pla    688888888",
-            "888888882                       bpab bplab  bpllllab                             688888888",
-            "888888882                       pla            plla                  t           688888888",
-            "888888882                     pa                plla          plla               688888888",
-            "888888882                                                                        688888888",
-            "888888882                                                                        688888888",
-            "888888882                                bpab                              bplla 688888888",
-            "888888882             b                  b  b                              b     688888888",
-            "888888882             b  P          E    b  b     E                        b     688888888",
-            "88888888z0001TTTTTTTTT70000000000000000001  70000000000000000000000000000001  700c88888888",
-            "888888888888z000000000c888888888888888888z00c888888888888888888888888888888z00c88888888888"
+            "88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888",
+            "88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888",
+            "88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888",
+            "88888888q444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444e8888888888",
+            "888888882                                                                                             JLL88888888",
+            "888888882                                                                                             JLL88888888",
+            "888888882                                                                                             68888888888",
+            "888888882                                                                                             68888888888",
+            "888888882                                                                                             68888888888",
+            "888888882                                                                                             68888888888",
+            "888888882                                                                                             68888888888",
+            "888888882                                                                                             68888888888",
+            "888888882                                                                                             68888888888",
+            "888888882                                                                                             68888888888",
+            "888888882                                                                                             68888888888",
+            "888888882                                                                                             68888888888",
+            "888888882                                                                                             68888888888",
+            "888888882                                          P                                                  68888888888",
+            "88888888z0000000000000000000001TTTTTTTTTTTTT7000000000c8z000001TTTTTT7000001   E   7000000000000000000c8888888888",
+            "888888888888888888888888888888z0000000000000c88888888888888888z000000c88888z0000000c88888888888888888888888888888",
+            "88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888"
         ],
         "gravedad": 2,
         "velocidad_mover_mapa": 4,
@@ -117,19 +202,35 @@
             "vida": 200,
             "disparo_cooldown": 300,
             "speed": 6,
-            "altura_salto": 20,
-            "super_salto": 0,
-            "fuerza": 20
+            "altura_salto": 25,
+            "super_salto": 1,
+            "fuerza": 20,
+            "fuerza_disparo": 10,
+            "vida_maxima": 200,
+            "len_barra_vida": 400,
+            "path": "assets/graphics/player/",
+            "jump_sound": "assets/sounds/jump_efect.mp3",
+            "shoot_sound": "assets/sounds/Air_3.wav"
+
         },
         "enemy": {
             "frame_rate": 200,
             "velocidad_animacion": 0.25,
             "velocidad_movimiento": 0.25,
             "vidas": 50,
-            "disparo_cooldown": 300,
+            "disparo_cooldown": 3000,
             "speed": 2,
-            "fuerza": 5
-        }
+            "fuerza": 5,
+            "path": "assets/graphics/enemy/summon/",
+            "fuerza_proyectil": 3
+        },
+        "fish": {
+            "frame_rate": 100,
+            "velocidad_animacion": 0.25,
+            "path": "assets/graphics/sobrecito/"
+        },
+        "main_theme": "assets/sounds/nivel_1.mp3",
+        "desbloquea": 2
     },
     "nivel_3": {
         "MAP": [
@@ -160,18 +261,29 @@
             "vida": 200,
             "disparo_cooldown": 300,
             "speed": 6,
-            "altura_salto": 20,
-            "super_salto": 0,
-            "fuerza": 20
+            "altura_salto": 25,
+            "super_salto": 1,
+            "fuerza": 20,
+            "vida_maxima": 200,
+            "len_barra_vida": 400,
+            "path": "assets/graphics/player/",
+            "jump_sound": "assets/sounds/jump_efect.mp3"
         },
         "enemy": {
             "frame_rate": 200,
             "velocidad_animacion": 0.25,
             "velocidad_movimiento": 0.25,
             "vidas": 50,
-            "disparo_cooldown": 300,
+            "disparo_cooldown": 3000,
             "speed": 2,
-            "fuerza": 5
-        }
+            "fuerza": 5,
+            "path": "assets/graphics/enemy/summon/"
+        },
+        "fish": {
+            "frame_rate": 100,
+            "velocidad_animacion": 0.25,
+            "path": "assets/graphics/sobrecito/"
+        },
+        "desbloquea": 2
     }
 }

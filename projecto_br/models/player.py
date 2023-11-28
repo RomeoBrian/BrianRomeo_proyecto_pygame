@@ -7,10 +7,10 @@ from models.proyectil import Proyectil
 class Player(pg.sprite.Sprite):
     def __init__(self,pos,gravedad,diccionario_config: dict,pantalla):
         super().__init__()
+        self.__player_config = diccionario_config
         self.importar_player_assest()
         self.__pantalla = pantalla
         #animacion
-        self.__player_config = diccionario_config
         self.__frame_rate = self.__player_config.get('frame_rate')
         self.__frame_index = 0
         self.__velocidad_animacion = self.__player_config.get('velocidad_animacion')
@@ -31,12 +31,14 @@ class Player(pg.sprite.Sprite):
 
         #vida
         self.__vidas = self.__player_config.get('vida')
+        self.__vida_maxima = self.__player_config.get('vida_maxima')
 
         #ataque
         self.__is_atacking = False
         self.__is_hitting = False
         self.__is_shooting = False
         self.__fuerza = self.__player_config.get('fuerza')
+        self.__fuerza_disparo = self.__player_config.get('fuerza_disparo')
         self.__proyectil_group = pg.sprite.Group()
         self.__tiempo_disparo = 0
         self.__disparo_cooldown = self.__player_config.get('disparo_cooldown')
@@ -49,6 +51,10 @@ class Player(pg.sprite.Sprite):
         if self.__do_super_salto:
             self.__altura_salto += 5
         self.__velocidad_salto = self.__altura_salto
+
+        #sonidos
+        self.__jump_sound = pg.mixer.Sound(self.__player_config.get('jump_sound'))
+        self.__shoot_sound = pg.mixer.Sound(self.__player_config.get('shoot_sound'))
 
     @property
     def speed(self):
@@ -133,6 +139,10 @@ class Player(pg.sprite.Sprite):
     @property
     def vidas(self):
         return self.__vidas
+    
+    @property
+    def vida_maxima(self):
+        return self.__vida_maxima
 
     @property
     def atack_rect(self):
@@ -162,9 +172,17 @@ class Player(pg.sprite.Sprite):
     def fuerza(self,aumento_fuerza):
         self.__fuerza = aumento_fuerza
 
+    @property
+    def fuerza_disparo(self):
+        return self.__fuerza_disparo
+
+    @fuerza_disparo.setter
+    def fuerza_disparo(self,aumento_fuerza_disparo):
+        self.__fuerza_disparo = aumento_fuerza_disparo
+
     def importar_player_assest(self):
-        path = 'assets/graphics/player/'
-        self.__animaciones = importar_carpeta(path,carpetas_bool= True)#{'idle': [], 'caer': [], 'correr': [], 'saltar': [], 'atack': [], 'shoot': []}
+        path = self.__player_config.get('path')
+        self.__animaciones = importar_carpeta(path,carpetas_bool= True) #{'idle': [], 'caer': [], 'correr': [], 'saltar': [], 'atack': [], 'shoot': []}
         
         for animacion in self.__animaciones.keys():
             path_completo = path + animacion
@@ -202,18 +220,18 @@ class Player(pg.sprite.Sprite):
 
         self.__velocidad_animacion += delta_ms
         if self.__is_shooting:
-            self.__frame_rate = 80  
+            self.__frame_rate = 80 
         if self.__velocidad_animacion >= self.__frame_rate:
             self.__frame_index += 1
             self.__frame_index %= len(animacion)
             image = animacion[self.__frame_index]
             self.tomar_direccion_imagen(image)
             self.__velocidad_animacion = 0
-            if self.__estado == 'atack' and self.__frame_index == 2:
+            if self.__estado == 'atack' and self.__frame_index == (len(animacion) -1):
                 self.__is_atacking = False
-            if self.__estado == 'damage' and self.__frame_index == 2:
+            if self.__estado == 'damage' and self.__frame_index == (len(animacion) -1):
                 self.__damage = False
-            if self.__estado == 'death' and self.__frame_index == 5:
+            if self.__estado == 'death' and self.__frame_index == (len(animacion) -1):
                 print('murio')
                 self.__frame_rate = 10000
         
@@ -279,14 +297,14 @@ class Player(pg.sprite.Sprite):
 
     def salto(self):
             if self.__do_salto:
+                self.__jump_sound.play()
+                self.__jump_sound.set_volume(0.3)
                 self.__direccion.y -= self.__velocidad_salto
                 self.__velocidad_salto -= self.__gravedad
                 if self.__velocidad_salto > -self.__altura_salto:
                     self.__do_salto = False
                     self.__velocidad_salto = self.__altura_salto
-                
-                
-
+                  
     
     def atack(self):
         self.__is_hitting = True
@@ -301,25 +319,30 @@ class Player(pg.sprite.Sprite):
         
     
     def shoot(self):
+        self.__shoot_sound.play()
+        self.__shoot_sound.set_volume(0.1)
         self.__is_shooting = True
         self.__is_hitting = True
         self.__proyectil_group.add(self.crear_proyectil())
     
     def crear_proyectil(self):
         if self.__mirar_derecha:
-            return Proyectil(self.rect.centerx, self.rect.centery, 'derecha','./assets/graphics/player/proyectil/proyectil.png' ,True) # Crea y devuelve un objeto de la clase Bullet en la posición actual del ratón
+            return Proyectil(self.rect.centerx, self.rect.centery, 'derecha',self.__player_config.get('path'),True) 
         else:
-            return Proyectil(self.rect.centerx, self.rect.centery, 'izquierda','./assets/graphics/player/proyectil/proyectil.png' , True) # Crea y devuelve un objeto de la clase Bullet en la posición actual del ratón
+            return Proyectil(self.rect.centerx, self.rect.centery, 'izquierda',self.__player_config.get('path'), True)
     
     def recibir_golpe(self,golpe = 0):
         self.__vidas -= golpe
         self.__damage = True
 
-    def update(self,delta_ms):
-        self.get_teclas()
-        self.cooldown()
-        self.player_estado()
-        self.play_animacion(delta_ms)
+        
+
+    def update(self,delta_ms,pausa):
+        if not pausa:
+            self.get_teclas()
+            self.cooldown()
+            self.player_estado()
+            self.play_animacion(delta_ms)
 
 
         
